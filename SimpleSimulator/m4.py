@@ -29,10 +29,8 @@ class mem:
         return self.memory
 
     def addtomemory(self,string,location):
-        #for i in range(256):
-        #    self.memory[i]=="0000000000000000"
         self.memory[location]=string
-        #        self.memory[i]=string
+        
 
         return self.memory
 
@@ -54,62 +52,62 @@ def reg_no(string,register):
     if string in register_values:
         k=int(register_keys[register_values.index(string)][1:])
     return k
-#for i in range(len(l1)):
- #   l2.append(l1[i].split()
-#pc=0
-#M1= mem(l1)
-#RF(registers,m3.register)
-s="0010101000000011"
-t="1001100000000000"
-#print(M1.getData(pc))
-#M1.memdec()
-#M1.dump()
-#for i in mem.memory:
-#       print(i)
-halted = 0
+
+
+
+
 def Execute(opcode,string,register,registers):
     global halted
-    #print(M1.getData(1))
+    global pc
+    global FLAGS
+    tempflag=FLAGS
+    reset()
+    max_int=65535
     if string[:5]==opcode["add"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
         a=b+c
-        #print(a)
+        if a>max_int:
+            a=a-max_int
+            changeflag('v')
+
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]==opcode["sub"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
-        a=b-c
-        #print(a)
+        if c>b:
+            a=0
+            changeflag('v')
+        else:
+            a=b-c
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]==opcode["mul"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
         a=b*c
-        #print(a)
+        if a>max_int:
+            a=a-max_int
+            changeflag('v')
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]==opcode["xor"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
         a=b^c
-        #print(a)
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]==opcode["or"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
         a=b|c
-        #print(a)
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]==opcode["and"][0]:
         b=int(registers[reg_no(string[10:13],register)],2)
         c=int(registers[reg_no(string[13:16],register)],2)
         a=b&c
-        #print(a)
         registers[reg_no(string[7:10],register)]=format(a,'016b')
 
     elif string[:5]=="00010":
@@ -134,8 +132,11 @@ def Execute(opcode,string,register,registers):
         registers[1]=format(r,'016b')
 
     elif string[:5]==opcode["mov"][0]:
-        a=int(registers[reg_no(string[13:16],register)],2)
-        registers[reg_no(string[10:13],register)]=format(a,'016b')
+        if string[13:16]=="111":
+            registers[reg_no(string[10:13],register)]=tempflag
+        else:    
+            a=int(registers[reg_no(string[13:16],register)],2)
+            registers[reg_no(string[10:13],register)]=format(a,'016b')
 
     elif string[:5]==opcode["not"][0]:
         a=int(registers[reg_no(string[13:16],register)],2)
@@ -145,10 +146,13 @@ def Execute(opcode,string,register,registers):
     elif string[:5]==opcode["cmp"][0]:
         a=int(registers[reg_no(string[10:13],register)],2)
         b=int(registers[reg_no(string[13:16],register)],2)
+        reset()
         if a>b:
-            print(1)
-        else:
-            print(0)
+            changeflag('g')
+        elif a<b:
+            changeflag('l')
+        elif a==b:
+            changeflag('e')
 
     elif string[:5]==opcode["st"][0]:
         a=int(registers[reg_no(string[5:8],register)],2)
@@ -161,43 +165,56 @@ def Execute(opcode,string,register,registers):
         a=int(M1.getData(location),2)
         registers[reg_no(string[5:8],register)]=format(a,'016b')
 
+    elif string[:5]==opcode["jmp"][0]:
+        location=int(string[8:],2)
+        pc=location-1
+
+    elif string[:5]==opcode["jgt"][0]:
+        if tempflag=="0000000000000010":
+            location=int(string[8:],2)
+            pc=location-1
+
+    elif string[:5]==opcode["jlt"][0]:
+        if tempflag=="0000000000000100":
+            location=int(string[8:],2)
+            pc=location-1
+    
+    elif string[:5]==opcode["je"][0]:
+        if tempflag=="0000000000000001":
+            location=int(string[8:],2)
+            pc=location-1
+
     elif string[:5]==opcode["hlt"][0]:
-        halted=1
+        halted= True
+               
+    return registers
+
+def reset():
+    global FLAGS
+    FLAGS="0000000000000000"
+
+
+def changeflag(string):
+    global FLAGS
+    if string=="v":
+        FLAGS="0000000000001000"
+    elif string=="l":
+        FLAGS="0000000000000100"
+    elif string=="g":
+        FLAGS="0000000000000010" 
+    elif string=="e":
+        FLAGS="0000000000000001"
         
-         
-        
-    return registers,halted
-
-#print(registers)
-#Execute(m3.opcode,M1.getData(pc),m3.register,registers)
-#Execute(m3.opcode,s,m3.register,registers)
-#Execute(m3.opcode,t,m3.register,registers)
-#print(registers)
-#M1.dump()
-def PC(pc,list):
-    if pc<256:
-        list.append(format(pc,'08b'))
-
-#def completedump(pc,list2):
- #   for i in range():
-
 
 pc=0
+halted = False
 M1= mem(l1)
+FLAGS="0000000000000000"
 RF(registers,m3.register)
-while(halted!=1):
+while not halted:
     instruction=M1.getData(pc)
-    #print(instruction)
     Execute(m3.opcode,instruction,m3.register,registers)
-#Execute(m3.opcode,s,m3.register,registers)
-#print(halted)
-    print(format(pc,'08b'),*registers,"0000000000000000")
+    print(format(pc,'08b'),*registers,FLAGS)
     pc+=1
-#M1= mem(l1)
-#RF(registers,m3.register)
-#s="0010101000000011"
-#t="0010000000000011"
-#print(M1.getData(pc))
-#M1.memdec()
+
 M1.dump()
-#print(*registers,sep=" ")
