@@ -1,4 +1,7 @@
 import m3
+#import matplotlib
+#matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 l1=[]
 pc_list=[]
 memory=[]
@@ -60,6 +63,9 @@ def Execute(opcode,string,register,registers):
     global halted
     global pc
     global FLAGS
+    global x
+    global y
+    global cycle
     tempflag=FLAGS
     reset()
     max_int=65535
@@ -158,6 +164,8 @@ def Execute(opcode,string,register,registers):
         a=int(registers[reg_no(string[5:8],register)],2)
         b=format(a,'016b')
         location=int(string[8:],2)
+        y.append(location)
+        x.append(cycle)
         M1.addtomemory(b,location) 
 
     elif string[:5]==opcode["ld"][0]:
@@ -168,6 +176,7 @@ def Execute(opcode,string,register,registers):
     elif string[:5]==opcode["jmp"][0]:
         location=int(string[8:],2)
         pc=location-1
+
 
     elif string[:5]==opcode["jgt"][0]:
         if tempflag=="0000000000000010":
@@ -211,10 +220,21 @@ halted = False
 M1= mem(l1)
 FLAGS="0000000000000000"
 RF(registers,m3.register)
+cycle=0
+x=[]
+y=[]
 while not halted:
     instruction=M1.getData(pc)
     Execute(m3.opcode,instruction,m3.register,registers)
     print(format(pc,'08b'),*registers,FLAGS)
+    y.append(pc)
     pc+=1
-
+    #y.append(pc)
+    x.append(cycle)
+    cycle+=1
+    #x.append(cycle)
 M1.dump()
+plt.scatter(x,y)
+plt.savefig('plot.png', dpi=300, bbox_inches='tight')
+plt.show()
+
