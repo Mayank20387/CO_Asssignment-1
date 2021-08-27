@@ -1,12 +1,10 @@
 import m3   
-#import matplotlib
-#matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 l1=[]
 pc_list=[]
 memory=[]
 registers=[]                   
-#registers=['0000000000000000', '0000000000000000', '0000000000000101', '0000000000000010', '0000000000000000', '0000000000000000', '0000000000000000']
+
 while True:    #appending the input in list l1
     try :
         line = input()
@@ -234,10 +232,8 @@ while not halted:
     print(format(pc,'08b'),*registers,FLAGS)
     y.append(pc)
     pc+=1
-    #y.append(pc)
     x.append(cycle)
     cycle+=1
-    #x.append(cycle)
 M1.dump()
 #for plotting graph
 plt.scatter(x,y)
